@@ -1,0 +1,35 @@
+{
+  "name": "e-commerce-backend",
+  "version": "1.0.0",
+  "description": "Backend of e-commerce site using nodejs and mongodb",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronythankachan/e-commerce-backend.git"
+  },
+  "keywords": [
+    "Nodejs",
+    "e-commerce",
+    "backend",
+    "MongoDB",
+    "Mern"
+  ],
+  "author": "Rony Thankachan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ronythankachan/e-commerce-backend/issues"
+  },
+  "homepage": "https://github.com/ronythankachan/e-commerce-backend#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.1.1"
+  }
+}
