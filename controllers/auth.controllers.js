@@ -3,20 +3,6 @@ const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 
 let refreshTokens = [];
-const posts = [
-  {
-    email: "rony.thankachan@cognicor.com",
-    title: "Post 1",
-  },
-  {
-    email: "leena@cognicor.com",
-    title: "post 2",
-  },
-];
-
-const getPosts = (req, res) => {
-  res.send(posts.filter((post) => post.email === req.user.email));
-};
 
 const login = async (req, res) => {
   const error = validateLoginData(req.body);
@@ -120,6 +106,5 @@ const generateAccessToken = (user) => {
 module.exports = {
   login,
   createNewToken,
-  getPosts,
   signUp,
 };

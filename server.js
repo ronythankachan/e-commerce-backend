@@ -9,9 +9,6 @@ connectDB();
 // Setup middleware to parse request as json
 app.use(express.json());
 // Hanlde Routes
-app.post("/login", authRouter);
-app.post("/token", authRouter);
-app.get("/posts", authRouter);
-app.post("/signup", authRouter);
+app.use("/auth", authRouter);
 // Start the server
 app.listen(process.env.PORT);
