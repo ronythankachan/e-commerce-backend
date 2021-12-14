@@ -9,7 +9,6 @@ module.exports = () => {
       useUnifiedTopology: true,
     })
     .then(() => {
-      console.log("Successfully connected to mongoDB");
       addRoles();
     })
     .catch((err) => {

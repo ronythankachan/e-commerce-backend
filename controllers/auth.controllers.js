@@ -1,18 +1,17 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
+const { sendConfirmationEmail } = require("../utils/email.utils");
 
 let refreshTokens = [];
 
 const login = async (req, res) => {
-  const error = validateLoginData(req.body);
-  if (error) return res.status(400).send({ message: error });
   const result = await User.findOne({ email: req.body.email });
   if (!result) return res.status(550).send({ message: "E-mail doesn't exist" });
   if (!(await bcrypt.compare(req.body.password, result.password)))
     return res.status(401).send({ message: "Incorrect password" });
-  if (result.status === "Pending")
-    return res.status(403).send("Account activation pending");
+  if (result.status !== "Active")
+    return res.status(403).send({ message: "Account activation pending" });
   const user = { email: req.body.email };
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
@@ -20,60 +19,44 @@ const login = async (req, res) => {
   res.send({ accessToken, refreshToken });
 };
 
-const validateLoginData = (data) => {
-  let message = "";
-  if (!data.email) message = "Email field is missing";
-  else if (!/\S+@\S+\.\S+/.test(data.email)) message = "Invalid e-mail";
-  else if (!data.password) message = "Password field is missing";
-  return message;
-};
-
 // API to add a new user into database
 const signUp = async (req, res) => {
-  const error = validateSignUpData(req.body);
-  if (error) return res.status(400).send({ message: error });
-  const newUser = new User({
-    name: req.body.name,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 10),
-    phone: req.body.phone,
-    confirmationCode: generateConfirmationCode(),
-  });
-  const userExists = await User.exists({ email: req.body.email });
-  if (userExists)
-    return res.status(409).send({ message: "User already exists" });
-  newUser
+  let { name, email, phone, password } = req.body;
+  const confirmationCode = generateConfirmationCode();
+  new User({
+    name,
+    email,
+    password,
+    phone,
+    confirmationCode,
+  })
     .save()
     .then(() => {
+      sendConfirmationEmail(name, email, confirmationCode);
       res.send({
         message: "Accout created. Check your email for verification",
       });
     })
     .catch((err) => {
-      res.status(400).send({ message: err.message });
+      res.status(500).send({ message: err.message });
     });
 };
-// validate signup data
-const validateSignUpData = (data) => {
-  let message = "";
-  if (!data.name) message = "Name is missing";
-  else if (!/^[a-zA-Z ]+$/.test(data.name))
-    message = "Name should only contain letters";
-  else if (!data.email) message = "E-mail is missing";
-  else if (!/\S+@\S+\.\S+/.test(data.email)) message = "Invalid e-mail";
-  else if (!data.phone) message = "Phone number is missing";
-  else if (!/^[789]\d{9}$/.test(data.phone)) message = "Invalid phone number";
-  else if (!data.password) message = "Password field is missing";
-  else if (
-    !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/.test(data.password)
-  )
-    message =
-      "Password should atleast contain 8 characters including one uppercase letter, one special character and a number";
-  return message;
-};
 
-// Function to send an e mail verification for authentication
-const sendEmailVerification = (email) => {};
+// Account activation by email verification
+const verifyUser = async (req, res) => {
+  const confirmationCode = req.params.confirmationCode;
+  const user = await User.findOne({ confirmationCode });
+  if (!user) return res.status(404).send({ message: "User not found" });
+  user.status = "Active";
+  user
+    .save()
+    .then(() => {
+      res.send({ message: "Account activated successfully" });
+    })
+    .catch((err) => {
+      res.status(500).send({ message: "Account activation failed" });
+    });
+};
 
 // Generate a confirmation code for signup verification from email
 const generateConfirmationCode = () => {
@@ -107,4 +90,5 @@ module.exports = {
   login,
   createNewToken,
   signUp,
+  verifyUser,
 };
