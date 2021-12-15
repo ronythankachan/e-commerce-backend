@@ -7,15 +7,13 @@ const Role = require("../models/role.model");
 let refreshTokens = [];
 
 const login = async (req, res) => {
-  const result = await User.findOne({ email: req.body.email });
-  console.log(result.password);
-  console.log(req.body.password);
+  const result = await User.findOne({ email: req.body.email }).populate("role");
   if (!result) return res.status(550).send({ message: "No such user" });
   if (!(await bcrypt.compare(req.body.password, result.password)))
     return res.status(401).send({ message: "Incorrect password" });
   if (result.status !== "Active")
     return res.status(403).send({ message: "Account activation pending" });
-  const user = { email: req.body.email };
+  const user = { email: req.body.email, role: result.role.name };
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
   refreshTokens.push(refreshToken);
