@@ -17,7 +17,7 @@ const sendConfirmationEmail = (name, email, confirmationCode) => {
       html: `<h1>Email Confirmation</h1>
         <h2>Hello ${name}</h2>
         <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-        <a href=${process.env.ACTIVATION_URL}+"/"${confirmationCode}> Click here</a>
+        <a href=${process.env.ACTIVATION_URL + confirmationCode}> Click here</a>
         </div>`,
     })
     .catch((err) => console.log(err));

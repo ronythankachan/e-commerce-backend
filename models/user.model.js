@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 var uniqueValidator = require("mongoose-unique-validator");
 
 const userSchema = new mongoose.Schema({
@@ -38,12 +39,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
   },
-  roles: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
-    },
-  ],
+  role: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Role",
+    required: true,
+  },
 });
 userSchema.plugin(uniqueValidator);
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password")) return next();
+  const hashedPassword = bcrypt.hashSync(this.password, 10);
+  this.password = hashedPassword;
+  next();
+});
+
 module.exports = mongoose.model("User", userSchema);

@@ -2,12 +2,15 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const { sendConfirmationEmail } = require("../utils/email.utils");
+const Role = require("../models/role.model");
 
 let refreshTokens = [];
 
 const login = async (req, res) => {
   const result = await User.findOne({ email: req.body.email });
-  if (!result) return res.status(550).send({ message: "E-mail doesn't exist" });
+  console.log(result.password);
+  console.log(req.body.password);
+  if (!result) return res.status(550).send({ message: "No such user" });
   if (!(await bcrypt.compare(req.body.password, result.password)))
     return res.status(401).send({ message: "Incorrect password" });
   if (result.status !== "Active")
@@ -23,13 +26,16 @@ const login = async (req, res) => {
 const signUp = async (req, res) => {
   let { name, email, phone, password } = req.body;
   const confirmationCode = generateConfirmationCode();
-  new User({
+  const role = await Role.findOne({ name: "user" });
+  const user = new User({
     name,
     email,
     password,
     phone,
     confirmationCode,
-  })
+    role: role._id,
+  });
+  user
     .save()
     .then(() => {
       sendConfirmationEmail(name, email, confirmationCode);
@@ -38,6 +44,7 @@ const signUp = async (req, res) => {
       });
     })
     .catch((err) => {
+      console.log(err);
       res.status(500).send({ message: err.message });
     });
 };
