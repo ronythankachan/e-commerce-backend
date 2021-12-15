@@ -3,9 +3,9 @@ const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const { sendConfirmationEmail } = require("../utils/email.utils");
 const Role = require("../models/role.model");
+const RefreshToken = require("../models/refresh-tokens.model");
 
-let refreshTokens = [];
-
+// Login
 const login = async (req, res) => {
   const result = await User.findOne({ email: req.body.email }).populate("role");
   if (!result) return res.status(550).send({ message: "No such user" });
@@ -16,11 +16,11 @@ const login = async (req, res) => {
   const user = { email: req.body.email, role: result.role.name };
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
-  refreshTokens.push(refreshToken);
+  new RefreshToken({ refreshToken: refreshToken }).save();
   res.send({ accessToken, refreshToken });
 };
 
-// API to add a new user into database
+// Add new user
 const signUp = async (req, res) => {
   let { name, email, phone, password } = req.body;
   const confirmationCode = generateConfirmationCode();
@@ -45,7 +45,7 @@ const signUp = async (req, res) => {
       res.status(500).send({ message: err.message });
     });
 };
-
+// Admin - change role of users.
 const changeRole = async (req, res) => {
   const { email, role } = req.body;
   if (!email || !role)
@@ -57,6 +57,18 @@ const changeRole = async (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({ message: err.message });
+    });
+};
+
+// Admin - Delete a user account.
+const deleteAccount = async (req, res) => {
+  if (!req.body.email) return res.status(400).send("user email is required");
+  User.deleteOne({ email: req.body.email })
+    .then(() => {
+      res.send({ message: "Account deleted" });
+    })
+    .catch((err) => {
+      res.status(500).send({ message: "Failed to delete account" });
     });
 };
 
@@ -88,20 +100,24 @@ const generateConfirmationCode = () => {
 };
 
 // Create a new JWT token from refresh token
-const createNewToken = (req, res) => {
-  const refreshToken = req.body.token;
-  if (refreshToken == null) return res.sendStatus(401);
-  if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
+const createNewToken = async (req, res) => {
+  const refreshToken = req.body.refreshToken;
+  const tokenExists = await RefreshToken.exists({ refreshToken: refreshToken });
+  if (!tokenExists)
+    return res.status(403).send({ message: "Invalid refresh token" });
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
+    if (err)
+      return res
+        .status(403)
+        .send({ message: "Refresh token validation failed" });
     const accessToken = generateAccessToken({ email: user.email });
-    res.send({ accessToken: accessToken });
+    res.send({ accessToken: accessToken, refreshToken: refreshToken });
   });
 };
 
 // Create a new access token
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "30m" });
 };
 
 module.exports = {
@@ -110,4 +126,5 @@ module.exports = {
   signUp,
   verifyUser,
   changeRole,
+  deleteAccount,
 };
