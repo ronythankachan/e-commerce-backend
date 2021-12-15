@@ -46,9 +46,13 @@ const userSchema = new mongoose.Schema({
   },
 });
 userSchema.plugin(uniqueValidator);
+// Hash the password before saving to database
 userSchema.pre("save", function (next) {
   if (!this.isModified("password")) return next();
-  const hashedPassword = bcrypt.hashSync(this.password, 10);
+  const hashedPassword = bcrypt.hashSync(
+    this.password,
+    parseInt(process.env.HASH_SALT)
+  );
   this.password = hashedPassword;
   next();
 });
