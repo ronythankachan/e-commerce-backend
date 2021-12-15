@@ -42,7 +42,20 @@ const signUp = async (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      res.status(500).send({ message: err.message });
+    });
+};
+
+const changeRole = async (req, res) => {
+  const { email, role } = req.body;
+  if (!email || !role)
+    return res.status(400).send({ message: "Invalid input" });
+  const roleData = await Role.findOne({ name: role });
+  User.findOneAndUpdate({ email: req.body.email }, { role: roleData._id })
+    .then(() => {
+      res.send({ message: `Role is changed to ${role}` });
+    })
+    .catch((err) => {
       res.status(500).send({ message: err.message });
     });
 };
@@ -96,4 +109,5 @@ module.exports = {
   createNewToken,
   signUp,
   verifyUser,
+  changeRole,
 };

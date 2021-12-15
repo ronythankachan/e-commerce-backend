@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 });
-userSchema.plugin(uniqueValidator);
+// userSchema.plugin(uniqueValidator);
 // Hash the password before saving to database
 userSchema.pre("save", function (next) {
   if (!this.isModified("password")) return next();
