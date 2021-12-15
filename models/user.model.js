@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-var uniqueValidator = require("mongoose-unique-validator");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -45,7 +44,6 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 });
-// userSchema.plugin(uniqueValidator);
 // Hash the password before saving to database
 userSchema.pre("save", function (next) {
   if (!this.isModified("password")) return next();
