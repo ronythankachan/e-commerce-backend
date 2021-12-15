@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 
 const authorizeToken = (req, res, next) => {
-  console.log("Authorize token");
   const auth = req.headers["authorization"];
   const token = auth && auth.split(" ")[1];
   if (token == null) return res.sendStatus(401);
@@ -11,6 +10,19 @@ const authorizeToken = (req, res, next) => {
     next();
   });
 };
+
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role !== "admin")
+    return res.status(403).send("You don't have permission for this operation");
+  next();
+};
+const isUser = (req, res, next) => {
+  if (req.user && req.user.role !== "user")
+    return res.status(403).send("You don't have permission for this operation");
+  next();
+};
 module.exports = {
   authorizeToken,
+  isAdmin,
+  isUser,
 };
