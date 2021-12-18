@@ -26,6 +26,7 @@ const isUser = (req, res, next) => {
       .send({ message: "You don't have permission for this operation" });
   next();
 };
+
 module.exports = {
   authorize,
   isAdmin,

@@ -1,5 +1,8 @@
-// This function can be used to add a new product/edit the existing one
-const saveProduct = (req, res) => {};
+const saveProduct = (req, res) => {
+  console.log(req.files.length);
+  console.log(JSON.stringify(req.body));
+  res.send("testing");
+};
 const deleteProduct = (req, res) => {};
 
 module.exports = {
