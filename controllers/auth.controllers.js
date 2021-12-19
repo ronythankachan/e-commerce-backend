@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
-const { sendConfirmationEmail } = require("../utils/email.utils");
+const { sendConfirmationEmail } = require("../helpers/email.helper");
 const Role = require("../models/role.model");
 const RefreshToken = require("../models/refresh-tokens.model");
 
