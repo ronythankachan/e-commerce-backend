@@ -7,7 +7,7 @@ const unlinkFile = util.promisify(fs.unlink);
 // Add or update product information
 const saveProduct = async (req, res) => {
   const imageURLs = [];
-  const images = req.files.images;
+  const images = req.files;
   for (let image of images) {
     try {
       const result = await uploadFile(image);
@@ -18,23 +18,40 @@ const saveProduct = async (req, res) => {
         err: err,
       });
     } finally {
-      await unlinkFile("uploads/productimages/" + file.originalname);
+      await unlinkFile("uploads/productimages/" + image.originalname);
     }
   }
-  const data = JSON.parse(JSON.stringify(req.body));
-  const product = JSON.parse(JSON.parse(data.data));
+  const product = JSON.parse(JSON.parse(req.body.data));
+  console.log(product);
   product.images = imageURLs;
-  const productResult = await new Product(product).save();
-  if (productResult)
+  try {
+    const productResult = await new Product(product).save();
     res.send({
       message: "Product information saved successfully",
       result: productResult,
     });
-  else res.status(500).send({ message: "Somthing went wrong" });
+  } catch (err) {
+    res.status(500).send({ message: "Somthing went wrong" });
+  }
 };
+
 const deleteProduct = (req, res) => {};
 
 module.exports = {
   saveProduct,
   deleteProduct,
+};
+
+const data = {
+  title: "Nike jordan",
+  description: "Nike jordan description",
+  price: {
+    currency: "inr",
+    value: 4000,
+  },
+  discount: 0,
+  categories: ["61c83ad83583ea78a59f8b49"],
+  tags: [],
+  extraInfo: [],
+  publish: true,
 };
