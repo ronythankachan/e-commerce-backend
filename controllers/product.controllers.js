@@ -8,6 +8,8 @@ const unlinkFile = util.promisify(fs.unlink);
 const saveProduct = async (req, res) => {
   const imageURLs = [];
   const images = req.files;
+  if (images.length === 0)
+    return res.status(400).send({ message: "images field is required" });
   for (let image of images) {
     try {
       const result = await uploadFile(image);
@@ -21,25 +23,41 @@ const saveProduct = async (req, res) => {
       await unlinkFile("uploads/productimages/" + image.originalname);
     }
   }
-  const product = JSON.parse(JSON.parse(req.body.data));
-  console.log(product);
-  product.images = imageURLs;
+  const data = JSON.parse(JSON.parse(req.body.data));
+  console.log(data);
+  data.images = imageURLs;
+  var product = new Product();
   try {
-    const productResult = await new Product(product).save();
-    res.send({
-      message: "Product information saved successfully",
-      result: productResult,
-    });
+    await product.init(data, {});
+    await product.save();
+    res.send({ message: "Product saved successfully" });
   } catch (err) {
-    res.status(500).send({ message: "Somthing went wrong" });
+    res.status(500).send({ message: "Failed to save product", err: err });
   }
 };
-
-const deleteProduct = (req, res) => {};
+// Delete a product
+const deleteProduct = async (req, res) => {
+  try {
+    await Product.deleteOne({ _id: req.body._id });
+    res.send({ message: "Product deleted successfully" });
+  } catch (err) {
+    res.status(500).send({ message: "Failed to delete product", err: err });
+  }
+};
+// Get all products
+const getProducts = async (req, res) => {
+  try {
+    const result = await Product.find();
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({ message: "Failed to get products" });
+  }
+};
 
 module.exports = {
   saveProduct,
   deleteProduct,
+  getProducts,
 };
 
 const data = {
@@ -49,9 +67,7 @@ const data = {
     currency: "inr",
     value: 4000,
   },
-  discount: 0,
   categories: ["61c83ad83583ea78a59f8b49"],
   tags: [],
-  extraInfo: [],
   publish: true,
 };
