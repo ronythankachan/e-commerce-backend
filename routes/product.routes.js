@@ -5,15 +5,11 @@ const { authorize, isAdmin } = require("../middlewares/auth.middlewares");
 const { uploadProductImages } = require("../middlewares/product.middlewares");
 
 router.post(
-  "/save",
+  "/add",
   [authorize, isAdmin, uploadProductImages],
-  productControllers.saveProduct
+  productControllers.addProduct
 );
-router.delete(
-  "/delete",
-  [authorize, isAdmin],
-  productControllers.deleteProduct
-);
+router.delete("/:id", [authorize, isAdmin], productControllers.deleteProduct);
 router.get(
   "/get-products",
   [authorize, isAdmin],
