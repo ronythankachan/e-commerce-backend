@@ -6,39 +6,31 @@ const Product = require("../models/product.model");
 const unlinkFile = util.promisify(fs.unlink);
 // Add or update product information
 const saveProduct = async (req, res) => {
-  const thumnail = req.files.thumbnail[0];
-  var thumbnailURL = "";
   const imageURLs = [];
-  const result = await uploadFile(thumnail)
-    .catch((err) => {
-      return res
-        .status(500)
-        .send({ message: "Uploading thumbnail to amazon s3 failed", err: err });
-    })
-    .finally(async () => {
-      await unlinkFile("uploads/productimages/" + thumnail.originalname);
-    });
-  thumbnailURL = result.Location;
-  for (const file of req.files.images) {
-    const result = await uploadFile(file)
-      .catch((err) => {
-        return res.status(500).send({
-          message: "Uploading images to amazon s3 failed",
-          err: err,
-        });
-      })
-      .finally(async () => {
-        await unlinkFile("uploads/productimages/" + file.originalname);
+  const images = req.files.images;
+  for (let image of images) {
+    try {
+      const result = await uploadFile(image);
+      imageURLs.push(result.Location);
+    } catch (err) {
+      return res.status(500).send({
+        message: "Uploading images to amazon s3 failed",
+        err: err,
       });
-    imageURLs.push(result.Location);
+    } finally {
+      await unlinkFile("uploads/productimages/" + file.originalname);
+    }
   }
-  // upload other data to mongodb
-  const product = JSON.parse(JSON.stringify(req.body));
-  product.thumbnail = thumbnailURL;
+  const data = JSON.parse(JSON.stringify(req.body));
+  const product = JSON.parse(JSON.parse(data.data));
   product.images = imageURLs;
-  console.log(product);
-  result = await new Product(product).save();
-  res.send(result);
+  const productResult = await new Product(product).save();
+  if (productResult)
+    res.send({
+      message: "Product information saved successfully",
+      result: productResult,
+    });
+  else res.status(500).send({ message: "Somthing went wrong" });
 };
 const deleteProduct = (req, res) => {};
 

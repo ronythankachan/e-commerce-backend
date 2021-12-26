@@ -19,10 +19,7 @@ const productImageStore = multer.diskStorage({
 
 // middleware to upload product images local directory
 const uploadProductImages = (req, res, next) => {
-  const upload = multer({ storage: productImageStore }).fields([
-    { name: "thumbnail", maxCount: 1 },
-    { name: "images", maxCount: 4 },
-  ]);
+  const upload = multer({ storage: productImageStore }).array("images", 4);
   upload(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(400).send(err);
