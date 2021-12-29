@@ -4,46 +4,34 @@ const { uploadFile } = require("../helpers/aws-s3.helper");
 const Product = require("../models/product.model");
 
 const unlinkFile = util.promisify(fs.unlink);
-// Add a new product
-const addProduct = async (req, res) => {
+
+// Upload image to aws s3 server and return url
+const uploadToAws = async (req, res) => {
+  if (req.imageCheck) return res.status(500).send({ message: req.imageCheck });
+  const image = req.file;
+  if (!image) return res.status(400).send({ message: "Image field missing" });
   try {
-    await new Product(req.body).save();
-    res.send({ message: "Product added successfully" });
+    const result = await uploadFile(image);
+    res.send({ url: result.Location });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: "Image upload failed", err: err.message });
+  } finally {
+    await unlinkFile("uploads/" + image.originalname);
+  }
+};
+
+// Add a new product
+const saveProduct = async (req, res) => {
+  const product = req.body;
+  try {
+    if (req.body._id) await Product.findByIdAndUpdate(id, req.body);
+    else await Product.create(req.body);
+    res.send({ message: "Product Saved successfully" });
   } catch (err) {
     res.status(500).send({ message: "Failed to add product", err: err });
   }
 };
-// Add or update product information
-// const saveProduct = async (req, res) => {
-//   const imageURLs = [];
-//   const images = req.files;
-//   if (images.length === 0)
-//     return res.status(400).send({ message: "images field is required" });
-//   for (let image of images) {
-//     try {
-//       const result = await uploadFile(image);
-//       imageURLs.push(result.Location);
-//     } catch (err) {
-//       return res.status(500).send({
-//         message: "Uploading images to amazon s3 failed",
-//         err: err,
-//       });
-//     } finally {
-//       await unlinkFile("uploads/productimages/" + image.originalname);
-//     }
-//   }
-//   const data = JSON.parse(JSON.parse(req.body.data));
-//   console.log(data);
-//   data.images = imageURLs;
-//   var product = new Product();
-//   try {
-//     await product.init(data, {});
-//     await product.save();
-//     res.send({ message: "Product saved successfully" });
-//   } catch (err) {
-//     res.status(500).send({ message: "Failed to save product", err: err });
-//   }
-// };
 
 // Delete a product
 const deleteProduct = async (req, res) => {
@@ -65,19 +53,8 @@ const getProducts = async (req, res) => {
 };
 
 module.exports = {
-  addProduct,
+  uploadToAws,
+  saveProduct,
   deleteProduct,
   getProducts,
 };
-
-// const data = {
-//   title: "Nike jordan",
-//   description: "Nike jordan description",
-//   price: {
-//     currency: "inr",
-//     value: 4000,
-//   },
-//   categories: ["61c83ad83583ea78a59f8b49"],
-//   tags: [],
-//   publish: true,
-// };
