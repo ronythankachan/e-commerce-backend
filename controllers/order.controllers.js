@@ -22,7 +22,22 @@ const changeOrderStatus = async (req, res) => {
   }
 };
 
+const addOrder = async (req, res) => {
+  try {
+    const order = new Order(req.body);
+    const result = await order.create();
+    res.send({
+      message: `Order placed successfully with order id : ${result._id}`,
+    });
+  } catch (err) {
+    res
+      .status(500)
+      .send({ message: "Failed to place order. Try again later." });
+  }
+};
+
 module.exports = {
   getAllOrders,
   changeOrderStatus,
+  addOrder,
 };
