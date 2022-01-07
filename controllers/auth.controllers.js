@@ -42,7 +42,9 @@ const signUp = async (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(500).send({ message: err.message });
+      if (err.code === 11000)
+        res.status(409).send({ message: "User is already registered with us" });
+      else res.status(500).send({ message: err.message });
     });
 };
 // Admin - change role of users.
