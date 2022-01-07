@@ -14,4 +14,5 @@ router.post(
   authControllers.deleteAccount
 );
 router.get("/test", [authorize, isAdmin]);
+router.post("/authenticate", authControllers.authenticate);
 module.exports = router;

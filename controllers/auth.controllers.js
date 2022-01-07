@@ -117,6 +117,17 @@ const createNewToken = async (req, res) => {
   });
 };
 
+const authenticate = (req, res) => {
+  jwt.verify(
+    req.body.accessToken,
+    process.env.ACCESS_TOKEN_SECRET,
+    (err, user) => {
+      if (err) res.status(403).send({ message: "Invalid token" });
+      res.send({ message: "Token verified", user: user });
+    }
+  );
+};
+
 // Create a new access token
 const generateAccessToken = (user) => {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1d" });
@@ -129,4 +140,5 @@ module.exports = {
   verifyUser,
   changeRole,
   deleteAccount,
+  authenticate,
 };
