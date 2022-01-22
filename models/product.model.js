@@ -6,22 +6,17 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    brand: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
       required: true,
     },
     price: {
-      currency: {
-        type: String,
-        enum: ["inr", "usd"],
-        default: "inr",
-        required: true,
-      },
-      value: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
+      type: Number,
+      required: true,
     },
     discount: {
       type: Number,
@@ -44,6 +39,10 @@ const productSchema = new mongoose.Schema(
         value: String,
       },
     ],
+    rating: {
+      type: Number,
+      required: true,
+    },
     publish: {
       type: Boolean,
       required: true,

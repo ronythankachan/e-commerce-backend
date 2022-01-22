@@ -102,19 +102,56 @@ const generateConfirmationCode = () => {
 };
 
 // Create a new JWT token from refresh token
-const createNewToken = async (req, res) => {
+const authorize = async (req, res) => {
+  const accessToken = req.body.accessToken;
   const refreshToken = req.body.refreshToken;
-  const tokenExists = await RefreshToken.exists({ refreshToken: refreshToken });
-  if (!tokenExists)
-    return res.status(403).send({ message: "Invalid refresh token" });
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err)
-      return res
-        .status(403)
-        .send({ message: "Refresh token validation failed" });
-    const accessToken = generateAccessToken({ email: user.email });
-    res.send({ accessToken: accessToken, refreshToken: refreshToken });
-  });
+  jwt.verify(
+    accessToken,
+    process.env.ACCESS_TOKEN_SECRET,
+    async (err, user) => {
+      if (err) {
+        const tokenExists = await RefreshToken.exists({
+          refreshToken: refreshToken,
+        });
+        if (!tokenExists)
+          return res.status(403).send({ message: "Invalid refresh token" });
+        jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET,
+          (err, user) => {
+            if (err)
+              return res
+                .status(403)
+                .send({ message: "Refresh token validation failed" });
+            const accessToken = generateAccessToken({ email: user.email });
+            res.send({
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+              user: user,
+            });
+          }
+        );
+      }
+      res.send({
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        user: user,
+      });
+    }
+  );
+
+  // const refreshToken = req.body.refreshToken;
+  // const tokenExists = await RefreshToken.exists({ refreshToken: refreshToken });
+  // if (!tokenExists)
+  //   return res.status(403).send({ message: "Invalid refresh token" });
+  // jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+  //   if (err)
+  //     return res
+  //       .status(403)
+  //       .send({ message: "Refresh token validation failed" });
+  //   const accessToken = generateAccessToken({ email: user.email });
+  //   res.send({ accessToken: accessToken, refreshToken: refreshToken });
+  // });
 };
 
 const authenticate = (req, res) => {
@@ -135,10 +172,9 @@ const generateAccessToken = (user) => {
 
 module.exports = {
   login,
-  createNewToken,
+  authorize,
   signUp,
   verifyUser,
   changeRole,
   deleteAccount,
-  authenticate,
 };

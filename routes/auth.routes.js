@@ -4,8 +4,8 @@ const authControllers = require("../controllers/auth.controllers");
 const { authorize, isAdmin } = require("../middlewares/auth.middlewares");
 
 router.post("/login", authControllers.login);
-router.post("/token", authControllers.createNewToken);
 router.post("/signup", authControllers.signUp);
+router.post("/authorize", authControllers.authorize);
 router.get("/confirm/:confirmationCode", authControllers.verifyUser);
 router.post("/change-role", [authorize, isAdmin], authControllers.changeRole);
 router.post(
@@ -14,5 +14,4 @@ router.post(
   authControllers.deleteAccount
 );
 router.get("/test", [authorize, isAdmin]);
-router.post("/authenticate", authControllers.authenticate);
 module.exports = router;
