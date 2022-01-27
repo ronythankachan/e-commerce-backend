@@ -24,14 +24,14 @@ const uploadToAws = async (req, res) => {
 // Add a new product
 const saveProduct = async (req, res) => {
   const product = req.body;
-  console.log(product);
   try {
     if (req.body._id) await Product.findByIdAndUpdate(product._id, req.body);
     else await Product.create(req.body);
     res.send({ message: "Product Saved successfully" });
   } catch (err) {
-    console.log(err);
-    res.status(500).send({ message: "Failed to add product", err: err });
+    res
+      .status(500)
+      .send({ message: "Failed to add product", err: err.message });
   }
 };
 
