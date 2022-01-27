@@ -12,6 +12,7 @@ router.post(
 );
 router.post("/save", [authorize, isAdmin], productControllers.saveProduct);
 router.delete("/:id", [authorize, isAdmin], productControllers.deleteProduct);
+router.get("/:id", [authorize, isAdmin], productControllers.getProductById);
 router.get("/", [authorize, isAdmin], productControllers.getProducts);
 
 module.exports = router;

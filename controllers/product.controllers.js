@@ -23,9 +23,9 @@ const uploadToAws = async (req, res) => {
 
 // Add a new product
 const saveProduct = async (req, res) => {
-  const product = req.body;
+  const id = req.body._id;
   try {
-    if (req.body._id) await Product.findByIdAndUpdate(product._id, req.body);
+    if (id) await Product.findByIdAndUpdate(id, req.body);
     else await Product.create(req.body);
     res.send({ message: "Product Saved successfully" });
   } catch (err) {
@@ -54,9 +54,20 @@ const getProducts = async (req, res) => {
   }
 };
 
+const getProductById = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await Product.findById(id);
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({ message: "Failed to get product by using id" });
+  }
+};
+
 module.exports = {
   uploadToAws,
   saveProduct,
   deleteProduct,
   getProducts,
+  getProductById,
 };
