@@ -37,6 +37,7 @@ const saveProduct = async (req, res) => {
 
 // Delete a product
 const deleteProduct = async (req, res) => {
+  console.log("delete product", req.params.id);
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.send({ message: "Product deleted successfully" });
