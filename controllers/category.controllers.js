@@ -9,7 +9,7 @@ const addCategory = async (req, res) => {
 };
 
 const deleteCategory = async (req, res) => {
-  const result = Category.deleteOne({ _id: req.body._id }).catch((err) => {
+  const result = Category.findByIdAndDelete(req.params.id).catch((err) => {
     return res
       .status(500)
       .send({ message: "Unable to delete category", err: err });

@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const authRouter = require("./routes/auth.routes");
 const productRouter = require("./routes/product.routes");
 const categoryRouter = require("./routes/category.routes");
+const brandRouter = require("./routes/brand.routes");
 const orderRouter = require("./routes/order.routes");
 const aws = require("./helpers/aws-s3.helper");
 require("dotenv").config();
@@ -17,5 +18,6 @@ app.use("/auth", authRouter);
 app.use("/product", productRouter);
 app.use("/category", categoryRouter);
 app.use("/order", orderRouter);
+app.use("/brand", brandRouter);
 // Start server
 app.listen(process.env.PORT);
