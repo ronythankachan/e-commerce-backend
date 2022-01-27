@@ -17,7 +17,19 @@ const deleteCategory = async (req, res) => {
   res.send({ message: "Category removed successfully" });
 };
 
+const getCategories = async (req, res) => {
+  try {
+    const result = await Category.find();
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to fetch categories",
+    });
+  }
+};
+
 module.exports = {
   addCategory,
   deleteCategory,
+  getCategories,
 };
