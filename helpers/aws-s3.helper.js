@@ -14,6 +14,15 @@ const uploadFile = async (file) => {
   };
   return await s3.upload(params).promise();
 };
+
+const deleteFile = async (file) => {
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: file.filename,
+  };
+  return await s3.deleteObject(params).promise();
+};
+
 module.exports = {
   uploadFile,
 };
