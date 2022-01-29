@@ -1,20 +1,21 @@
 const Category = require("../models/category.model");
+
 const addCategory = async (req, res) => {
-  const result = new Category({ name: req.body.name }).save().catch((err) => {
-    return res
-      .status(500)
-      .send({ message: "Failed to add category", err: err });
-  });
-  res.send("Category added successfully");
+  try {
+    await new Category({ name: req.body.name }).save();
+    res.send({ message: "Category added successfully" });
+  } catch (err) {
+    res.status(500).send({ message: "Failed to add category" });
+  }
 };
 
 const deleteCategory = async (req, res) => {
-  const result = Category.findByIdAndDelete(req.params.id).catch((err) => {
-    return res
-      .status(500)
-      .send({ message: "Unable to delete category", err: err });
-  });
-  res.send({ message: "Category removed successfully" });
+  try {
+    await Category.findByIdAndDelete(req.params.id);
+    res.send({ message: "Category deleted successfully" });
+  } catch (err) {
+    res.status(500).send({ message: "Failed to delete category" });
+  }
 };
 
 const getCategories = async (req, res) => {
