@@ -1,18 +1,20 @@
 const Brand = require("../models/brand.model");
 const addBrand = async (req, res) => {
-  const result = new Brand(req.body).save().catch((err) => {
-    return res.status(500).send({ message: "Failed to add brand", err: err });
-  });
-  res.send("Brand added successfully");
+  try {
+    await new Brand(req.body).save();
+    res.send("Brand added successfully");
+  } catch (err) {
+    res.status(500).send({ message: "Failed to add brand" });
+  }
 };
 
 const deleteBrand = async (req, res) => {
-  const result = Brand.findByIdAndDelete(req.params.id).catch((err) => {
-    return res
-      .status(500)
-      .send({ message: "Unable to delete brand", err: err });
-  });
-  res.send({ message: "Brand removed successfully" });
+  try {
+    await Brand.findByIdAndDelete(req.params.id);
+    res.send("Brand deleted successfully");
+  } catch (err) {
+    res.status(500).send({ message: "Failed to delete brand" });
+  }
 };
 
 const getBrands = async (req, res) => {
