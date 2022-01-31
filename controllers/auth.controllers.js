@@ -17,7 +17,7 @@ const login = async (req, res) => {
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
   new RefreshToken({ refreshToken: refreshToken }).save();
-  res.send({ accessToken, refreshToken });
+  res.send({ accessToken, refreshToken, ...user });
 };
 
 // Add new user
@@ -127,7 +127,7 @@ const authorize = async (req, res) => {
             res.send({
               accessToken: accessToken,
               refreshToken: refreshToken,
-              user: user,
+              ...user,
             });
           }
         );
@@ -135,7 +135,7 @@ const authorize = async (req, res) => {
       res.send({
         accessToken: accessToken,
         refreshToken: refreshToken,
-        user: user,
+        ...user,
       });
     }
   );
