@@ -2,92 +2,75 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const { sendConfirmationEmail } = require("../helpers/email.helper");
-const Role = require("../models/role.model");
 const RefreshToken = require("../models/refresh-tokens.model");
 
 // Login
 const login = async (req, res) => {
-  const result = await User.findOne({ email: req.body.email }).populate("role");
+  const result = await User.findOne({ email: req.body.email });
   if (!result) return res.status(550).send({ message: "No such user" });
   if (!(await bcrypt.compare(req.body.password, result.password)))
     return res.status(401).send({ message: "Incorrect password" });
   if (result.status !== "Active")
     return res.status(403).send({ message: "Account activation pending" });
-  const user = { email: req.body.email, role: result.role.name };
+  const user = { email: result.email, admin: result.admin };
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
-  new RefreshToken({ refreshToken: refreshToken }).save();
-  res.send({ accessToken, refreshToken, ...user });
+  new RefreshToken({ refreshToken }).save();
+  res.send({ accessToken, refreshToken });
 };
 
 // Add new user
 const signUp = async (req, res) => {
-  let { name, email, phone, password } = req.body;
-  const confirmationCode = generateConfirmationCode();
-  const role = await Role.findOne({ name: "user" });
-  const user = new User({
-    name,
-    email,
-    password,
-    phone,
-    confirmationCode,
-    role: role._id,
-  });
-  user
-    .save()
-    .then(() => {
-      sendConfirmationEmail(name, email, confirmationCode);
-      res.send({
-        message: "Accout created. Check your email for verification",
-      });
-    })
-    .catch((err) => {
-      if (err.code === 11000)
-        res.status(409).send({ message: "User is already registered with us" });
-      else res.status(500).send({ message: err.message });
-    });
+  const user = req.body;
+  try {
+    const confirmationCode = generateConfirmationCode();
+    await new User({ ...user, confirmationCode }).save();
+    sendConfirmationEmail(user.name, user.email, confirmationCode);
+    res.send({ message: "Accout created. Check your email for verification" });
+  } catch (err) {
+    if (err.code === 11000)
+      res.status(409).send({ message: "User is already exists" });
+    else res.status(500).send("Failed to add account");
+  }
 };
+
 // Admin - change role of users.
 const changeRole = async (req, res) => {
-  const { email, role } = req.body;
-  if (!email || !role)
-    return res.status(400).send({ message: "Invalid input" });
-  const roleData = await Role.findOne({ name: role });
-  User.findOneAndUpdate({ email: req.body.email }, { role: roleData._id })
-    .then(() => {
-      res.send({ message: `Role is changed to ${role}` });
-    })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
+  if (!req.admin || !req._id)
+    return res
+      .status(400)
+      .send({ message: "_id field and admin boolean value is required" });
+  try {
+    await User.findByIdAndUpdate(req._id, { admin: req.admin });
+    res.send({ message: `Role changed to ${req.admin}` });
+  } catch (err) {
+    res.status(500).send({ message: "Failed to change user role" });
+  }
 };
 
 // Admin - Delete a user account.
 const deleteAccount = async (req, res) => {
-  if (!req.body.email) return res.status(400).send("user email is required");
-  User.deleteOne({ email: req.body.email })
-    .then(() => {
-      res.send({ message: "Account deleted" });
-    })
-    .catch((err) => {
-      res.status(500).send({ message: "Failed to delete account" });
-    });
+  if (!req._id) return res.status(400).send("_id field is missing");
+  try {
+    await User.findByIdAndDelete(req._id);
+    res.send({ message: "Account deleted" });
+  } catch (err) {
+    res.status(500).send({ message: "Failed to delete account" });
+  }
 };
 
 // Account activation by email verification
 const verifyUser = async (req, res) => {
   const confirmationCode = req.params.confirmationCode;
-  const user = await User.findOne({ confirmationCode });
-  if (!user) return res.status(404).send({ message: "User not found" });
-  user.status = "Active";
-  user
-    .save()
-    .then(() => {
-      res.send({ message: "Account activated successfully" });
-    })
-    .catch((err) => {
-      res.status(500).send({ message: "Account activation failed" });
-    });
+  try {
+    const user = await User.findOne({ confirmationCode });
+    if (!user) return res.status(404).send({ message: "User not found" });
+    user.status = "Active";
+    await user.save();
+    res.send({ message: "Account activated successfully" });
+  } catch (err) {
+    res.status(500).send({ message: "Account activation failed" });
+  }
 };
 
 // Generate a confirmation code for signup verification from email
@@ -127,7 +110,6 @@ const authorize = async (req, res) => {
             res.send({
               accessToken: accessToken,
               refreshToken: refreshToken,
-              ...user,
             });
           }
         );
@@ -135,39 +117,14 @@ const authorize = async (req, res) => {
       res.send({
         accessToken: accessToken,
         refreshToken: refreshToken,
-        ...user,
       });
-    }
-  );
-
-  // const refreshToken = req.body.refreshToken;
-  // const tokenExists = await RefreshToken.exists({ refreshToken: refreshToken });
-  // if (!tokenExists)
-  //   return res.status(403).send({ message: "Invalid refresh token" });
-  // jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-  //   if (err)
-  //     return res
-  //       .status(403)
-  //       .send({ message: "Refresh token validation failed" });
-  //   const accessToken = generateAccessToken({ email: user.email });
-  //   res.send({ accessToken: accessToken, refreshToken: refreshToken });
-  // });
-};
-
-const authenticate = (req, res) => {
-  jwt.verify(
-    req.body.accessToken,
-    process.env.ACCESS_TOKEN_SECRET,
-    (err, user) => {
-      if (err) res.status(403).send({ message: "Invalid token" });
-      res.send({ message: "Token verified", user: user });
     }
   );
 };
 
 // Create a new access token
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1d" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1w" });
 };
 
 module.exports = {

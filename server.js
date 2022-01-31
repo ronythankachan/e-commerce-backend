@@ -7,7 +7,6 @@ const productRouter = require("./routes/product.routes");
 const categoryRouter = require("./routes/category.routes");
 const brandRouter = require("./routes/brand.routes");
 const orderRouter = require("./routes/order.routes");
-const aws = require("./helpers/aws-s3.helper");
 require("dotenv").config();
 require("./DBConnection.js")();
 app.use(cors());

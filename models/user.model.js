@@ -39,10 +39,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
-    role: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
-      required: true,
+    admin: {
+      type: Boolean,
+      enum: [true, false],
+      default: false,
     },
   },
   { timestamps: true }
