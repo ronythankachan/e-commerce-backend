@@ -84,47 +84,22 @@ const generateConfirmationCode = () => {
   return code;
 };
 
-// Create a new JWT token from refresh token
+// Check if a token is valid
 const authorize = async (req, res) => {
   const accessToken = req.body.accessToken;
-  const refreshToken = req.body.refreshToken;
-  jwt.verify(
-    accessToken,
-    process.env.ACCESS_TOKEN_SECRET,
-    async (err, user) => {
-      if (err) {
-        const tokenExists = await RefreshToken.exists({
-          refreshToken: refreshToken,
-        });
-        if (!tokenExists)
-          return res.status(403).send({ message: "Invalid refresh token" });
-        jwt.verify(
-          refreshToken,
-          process.env.REFRESH_TOKEN_SECRET,
-          (err, user) => {
-            if (err)
-              return res
-                .status(403)
-                .send({ message: "Refresh token validation failed" });
-            const accessToken = generateAccessToken({ email: user.email });
-            res.send({
-              accessToken: accessToken,
-              refreshToken: refreshToken,
-            });
-          }
-        );
-      }
-      res.send({
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      });
-    }
-  );
+  if (!accessToken)
+    return res.status(401).send({ message: "Token is missing" });
+  try {
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    res.send({ message: "Token is valid" });
+  } catch (err) {
+    res.status(403).send({ message: "Invalid token" });
+  }
 };
 
 // Create a new access token
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1w" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
 };
 
 module.exports = {

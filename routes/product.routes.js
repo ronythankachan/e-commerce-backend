@@ -1,5 +1,4 @@
 const express = require("express");
-const multer = require("multer");
 const router = express.Router();
 const productControllers = require("../controllers/product.controllers");
 const { authorize, isAdmin } = require("../middlewares/auth.middlewares");
@@ -12,7 +11,7 @@ router.post(
 );
 router.post("/save", [authorize, isAdmin], productControllers.saveProduct);
 router.delete("/:id", [authorize, isAdmin], productControllers.deleteProduct);
-router.get("/:id", [authorize, isAdmin], productControllers.getProductById);
-router.get("/", [authorize, isAdmin], productControllers.getProducts);
+router.get("/:id", productControllers.getProductById);
+router.get("/", productControllers.getProducts);
 
 module.exports = router;

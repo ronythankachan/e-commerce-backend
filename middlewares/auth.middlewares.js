@@ -13,14 +13,14 @@ const authorize = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role !== "admin")
+  if (req.user && !req.user.admin)
     return res
       .status(403)
       .send({ message: "You don't have permission for this operation" });
   next();
 };
 const isUser = (req, res, next) => {
-  if (req.user && req.user.role !== "user")
+  if (req.user && req.user.admin)
     return res
       .status(403)
       .send({ message: "You don't have permission for this operation" });
