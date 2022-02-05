@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 var uploadToLocal = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const fileTypes = ["image/png", "image/jpg", "image/jpeg"];
+    const fileTypes = ["image/png", "image/jpg", "image/jpeg", "image/webp"];
     if (fileTypes.includes(file.mimetype)) cb(null, true);
     else {
       req.imageCheck = "Only .jpg, .png and .jpeg format allowed!";

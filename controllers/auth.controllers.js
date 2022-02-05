@@ -99,7 +99,7 @@ const authorize = async (req, res) => {
 
 // Create a new access token
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1w" });
 };
 
 module.exports = {
