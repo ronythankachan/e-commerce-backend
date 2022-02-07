@@ -37,7 +37,6 @@ const saveProduct = async (req, res) => {
 
 // Delete a product
 const deleteProduct = async (req, res) => {
-  console.log("delete product", req.params.id);
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.send({ message: "Product deleted successfully" });
@@ -48,7 +47,7 @@ const deleteProduct = async (req, res) => {
 // Get all products
 const getProducts = async (req, res) => {
   try {
-    const result = await Product.find();
+    const result = await Product.find(req.body);
     res.send(result);
   } catch (err) {
     res.status(500).send({ message: "Failed to get products" });
