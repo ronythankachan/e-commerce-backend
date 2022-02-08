@@ -5,5 +5,6 @@ const { authorize, isAdmin } = require("../middlewares/auth.middlewares");
 
 router.post("/add", [authorize, isAdmin], brandControllers.addBrand);
 router.get("/", brandControllers.getBrands);
+router.get("/:id", brandControllers.getBrandById);
 router.delete("/:id", [authorize, isAdmin], brandControllers.deleteBrand);
 module.exports = router;

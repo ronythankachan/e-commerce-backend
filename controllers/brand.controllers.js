@@ -28,8 +28,20 @@ const getBrands = async (req, res) => {
   }
 };
 
+const getBrandById = async (req, res) => {
+  try {
+    const result = await Brand.findById(req.params.id);
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to fetch brands",
+    });
+  }
+};
+
 module.exports = {
   addBrand,
   deleteBrand,
   getBrands,
+  getBrandById,
 };

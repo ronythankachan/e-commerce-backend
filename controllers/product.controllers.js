@@ -55,9 +55,8 @@ const getProducts = async (req, res) => {
 };
 
 const getProductById = async (req, res) => {
-  const id = req.params.id;
   try {
-    const result = await Product.findById(id);
+    const result = await Product.findById(req.params.id);
     res.send(result);
   } catch (err) {
     res.status(500).send({ message: "Failed to get product by using id" });
