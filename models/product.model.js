@@ -29,6 +29,7 @@ const productSchema = new mongoose.Schema(
       },
     ],
     tags: [String],
+    variations: [String],
     images: {
       type: [String],
       required: true,
