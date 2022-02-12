@@ -63,8 +63,49 @@ const getReviewByProductId = async (req, res) => {
   }
 };
 
+const getAvgRatingAndTotalReviews = async (req, res) => {
+  const avgRatingAgg = [
+    {
+      $match: {
+        product: mongoose.Types.ObjectId(req.params.id),
+      },
+    },
+    {
+      $group: {
+        _id: "$_id",
+        avgRating: {
+          $avg: "$rating",
+        },
+      },
+    },
+  ];
+  const reviewCountAgg = [
+    {
+      $match: {
+        product: mongoose.Types.ObjectId(req.params.id),
+        review: {
+          $ne: "",
+        },
+      },
+    },
+    {
+      $count: "review",
+    },
+  ];
+  try {
+    const avgRating = await Review.aggregate(avgRatingAgg);
+    const reviewCount = await Review.aggregate(reviewCountAgg);
+    res.send({ ...avgRating[0], ...reviewCount[0] });
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to get average rating and no.of reviews",
+    });
+  }
+};
+
 module.exports = {
   addReview,
   deleteReview,
   getReviewByProductId,
+  getAvgRatingAndTotalReviews,
 };

@@ -5,5 +5,6 @@ const { authorize } = require("../middlewares/auth.middlewares");
 
 router.post("/add", [authorize], reviewControllers.addReview);
 router.get("/:id", reviewControllers.getReviewByProductId);
+router.get("/rating/:id", reviewControllers.getAvgRatingAndTotalReviews);
 router.delete("/:id", [authorize], reviewControllers.deleteReview);
 module.exports = router;
