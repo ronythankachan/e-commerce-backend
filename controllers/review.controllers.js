@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Review = require("../models/review.model");
 const addReview = async (req, res) => {
   try {
@@ -17,11 +18,45 @@ const deleteReview = async (req, res) => {
   }
 };
 
-const getReviewById = async (req, res) => {
+const getReviewByProductId = async (req, res) => {
   try {
-    const result = await Review.findById(req.params.id);
+    const agg = [
+      {
+        $match: {
+          product: mongoose.Types.ObjectId(req.params.id),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $addFields: {
+          user: {
+            $arrayElemAt: ["$user", 0],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          product: 1,
+          rating: 1,
+          review: 1,
+          "user.email": 1,
+          "user._id": 1,
+          updatedAt: 1,
+        },
+      },
+    ];
+    const result = await Review.aggregate(agg);
     res.send(result);
   } catch (err) {
+    console.log(err);
     res.status(500).send({
       message: "Failed to fetch reviews",
     });
@@ -31,5 +66,5 @@ const getReviewById = async (req, res) => {
 module.exports = {
   addReview,
   deleteReview,
-  getReviewById,
+  getReviewByProductId,
 };
