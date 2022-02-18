@@ -74,7 +74,7 @@ const getAvgRatingAndTotalReviews = async (req, res) => {
     {
       $group: {
         _id: "$_id",
-        avgRating: {
+        rating: {
           $avg: "$rating",
         },
       },
@@ -90,7 +90,7 @@ const getAvgRatingAndTotalReviews = async (req, res) => {
       },
     },
     {
-      $count: "review",
+      $count: "reviews",
     },
   ];
   try {
