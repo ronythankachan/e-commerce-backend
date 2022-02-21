@@ -1,6 +1,5 @@
 const Cart = require("../models/cart.model");
 
-// This function can be
 const changeCart = async (req, res) => {
   try {
     if (!req.body._id) {
