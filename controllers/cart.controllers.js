@@ -21,4 +21,13 @@ const changeCart = async (req, res) => {
   }
 };
 
-module.exports = { changeCart };
+const getCartByUserId = async (req, res) => {
+  try {
+    const result = await Cart.findOne({ user: req.params.id });
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({ message: "Failed to get cart items" });
+  }
+};
+
+module.exports = { changeCart, getCartByUserId };
