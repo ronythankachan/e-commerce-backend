@@ -5,8 +5,6 @@ const addToCart = async (req, res) => {
       const result = await Cart.create(req.body);
       res.send(result);
     } else {
-      console.log(req.body._id);
-      console.log(req.body.products);
       const updatedResult = await Cart.findByIdAndUpdate(
         req.body._id,
         {
@@ -17,7 +15,6 @@ const addToCart = async (req, res) => {
       res.send(updatedResult);
     }
   } catch (err) {
-    console.log(err);
     res.status(500).send({ message: "Failed to update cart" });
   }
 };
