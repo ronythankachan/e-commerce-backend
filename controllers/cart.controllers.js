@@ -1,5 +1,7 @@
 const Cart = require("../models/cart.model");
-const addToCart = async (req, res) => {
+
+// This function can be
+const changeCart = async (req, res) => {
   try {
     if (!req.body._id) {
       const result = await Cart.create(req.body);
@@ -18,4 +20,5 @@ const addToCart = async (req, res) => {
     res.status(500).send({ message: "Failed to update cart" });
   }
 };
-module.exports = { addToCart };
+
+module.exports = { changeCart };
